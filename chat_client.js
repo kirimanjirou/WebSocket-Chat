@@ -1,7 +1,6 @@
-// WebSocketサーバに接続
-var ws = new WebSocket('ws://172.16.145.136:8888/');
-
-// エラー処理
+//WebSocketサーバへの接続
+var ws = new WebSocket('ws://183.181.4.13:8887/');
+ 
 ws.onerror = function(e){
   $('#chat-area').empty()
     .addClass('alert alert-error')
@@ -10,32 +9,33 @@ ws.onerror = function(e){
       'サーバに接続できませんでした。'
     );
 }
-
-// ユーザ名をランダムに生成
-var userName = 'ゲスト' + Math.floor(Math.random() * 100);
-// チャットボックスの前にユーザ名を表示
+ 
+//クライアントからユーザ名/画像を取得
+var userName = document.getElementById( 'user' ).title;
+var picture = document.getElementById( 'picture' ).title;
 $('#user-name').append(userName);
-
+ 
 // WebSocketサーバ接続イベント
 ws.onopen = function() {
   $('#textbox').focus();
   // 入室情報を文字列に変換して送信
   ws.send(JSON.stringify({
     type: 'join',
-    user: userName
+    user: userName,
+    picture: picture
   }));
 };
-
+ 
 // メッセージ受信イベントを処理
 ws.onmessage = function(event) {
   // 受信したメッセージを復元
   var data = JSON.parse(event.data);
   var item = $('<li/>').append(
     $('<div/>').append(
-      $('<i/>').addClass('icon-user'),
+      $('<i/>').append($('<img>').attr('src',data.picture).attr('width',"30").attr('height',"30")),
       $('<small/>').addClass('meta chat-time').append(data.time))
   );
-
+ 
   // pushされたメッセージを解釈し、要素を生成する
   if (data.type === 'join') {
     item.addClass('alert alert-info')
@@ -46,7 +46,7 @@ ws.onmessage = function(event) {
     .append($('<div/>').text(data.text))
     .children('div').children('i').after(data.user);
   } else if (data.type === 'defect') {
-    item.addClass('alert')
+    item.addClass('alert alert-success')
     .prepend('<button type="button" class="close" data-dismiss="alert">×</button>')
     .children('div').children('i').after(data.user + 'が退室しました');
   } else {
@@ -56,8 +56,8 @@ ws.onmessage = function(event) {
   }
   $('#chat-history').prepend(item).hide().fadeIn(500);
 };
-
-
+ 
+ 
 // 発言イベント
 textbox.onkeydown = function(event) {
   // エンターキーを押したとき
@@ -65,16 +65,18 @@ textbox.onkeydown = function(event) {
     ws.send(JSON.stringify({
       type: 'chat',
       user: userName,
-      text: textbox.value
+      text: textbox.value,
+      picture: picture
     }));
     textbox.value = '';
   }
 };
-
+ 
 // ブラウザ終了イベント
 window.onbeforeunload = function () {
   ws.send(JSON.stringify({
     type: 'defect',
     user: userName,
+    picture: picture
   }));
 };
