@@ -1,7 +1,7 @@
 // VMware上のCentOS6で動作させたときの例
 // 8888番ポートでクライアントの接続を待ち受ける
 var ws = require('websocket.io');
-var server = ws.listen(8888, function () {
+var server = ws.listen(8887, function () {
   console.log('\033[96m Server running at 172.16.145.136:8888 \033[39m');
 });
 
