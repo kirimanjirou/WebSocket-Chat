@@ -1,8 +1,15 @@
 // VMware上のCentOS6で動作させたときの例
-// 8888番ポートでクライアントの接続を待ち受ける
-var ws = require('websocket.io');
 var server = ws.listen(8887, function () {
-  console.log('\033[96m Server running at 172.16.145.136:8888 \033[39m');
+  console.log('\033[96m Server running at 183.181.4.13:8887 \033[39m');
+});
+
+//memcache
+var memcache = require('memcache');
+var client = new memcache.Client();
+
+//errorハンドラ
+server.on('uncaughtException', function (err) {
+  console.log(d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + err);
 });
 
 // クライアントからの接続イベントを処理
@@ -13,14 +20,14 @@ server.on('connection', function(socket) {
     var data = JSON.parse(data);
     var d = new Date();
     data.time = d.getFullYear()  + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+
     data = JSON.stringify(data);
     console.log('\033[96m' + data + '\033[39m');
-    
     // 受信したメッセージを全てのクライアントに送信する
     server.clients.forEach(function(client) {
-      if (client) {
-        client.send(data);        
-      }
+     if (client != null) {
+        client.send(data);
+     }
     });
   });
 });
